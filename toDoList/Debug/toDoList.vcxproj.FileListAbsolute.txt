@@ -1,0 +1,3 @@
+D:\cpp winApps\toDoList\toDoList\Debug\toDoList.vcxproj.AssemblyReference.cache
+D:\cpp winApps\toDoList\toDoList\Debug\toDoList.MyForm.resources
+D:\cpp winApps\toDoList\toDoList\Debug\toDoList.vcxproj.GenerateResource.cache
