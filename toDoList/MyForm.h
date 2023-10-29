@@ -47,6 +47,8 @@ namespace toDoList {
 
 	private: System::Windows::Forms::ListBox^ taskList;
 	private: System::Windows::Forms::Label^ taskExistsLabel;
+	private: System::Windows::Forms::Button^ Delete;
+	private: System::Windows::Forms::Button^ Update;
 
 	private:
 		/// <summary>
@@ -65,6 +67,8 @@ namespace toDoList {
 			this->addTaskBtn = (gcnew System::Windows::Forms::Button());
 			this->taskList = (gcnew System::Windows::Forms::ListBox());
 			this->taskExistsLabel = (gcnew System::Windows::Forms::Label());
+			this->Delete = (gcnew System::Windows::Forms::Button());
+			this->Update = (gcnew System::Windows::Forms::Button());
 			this->SuspendLayout();
 			// 
 			// taskInp
@@ -105,18 +109,39 @@ namespace toDoList {
 			this->taskExistsLabel->TabIndex = 3;
 			this->taskExistsLabel->Text = L"Task Already exists";
 			// 
+			// Delete
+			// 
+			this->Delete->Location = System::Drawing::Point(348, 113);
+			this->Delete->Name = L"Delete";
+			this->Delete->Size = System::Drawing::Size(100, 40);
+			this->Delete->TabIndex = 3;
+			this->Delete->Text = L"Delete";
+			this->Delete->UseVisualStyleBackColor = true;
+			this->Delete->Click += gcnew System::EventHandler(this, &MyForm::deleteItem);
+			// 
+			// Update
+			// 
+			this->Update->Location = System::Drawing::Point(348, 181);
+			this->Update->Name = L"Update";
+			this->Update->Size = System::Drawing::Size(100, 40);
+			this->Update->TabIndex = 4;
+			this->Update->Text = L"Update";
+			this->Update->UseVisualStyleBackColor = true;
+			this->Update->Click += gcnew System::EventHandler(this, &MyForm::updateItem);
+			// 
 			// MyForm
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(481, 422);
-			//this->Controls->Add(this->taskExistsLabel);
+			this->Controls->Add(this->Update);
+			this->Controls->Add(this->Delete);
 			this->Controls->Add(this->taskList);
 			this->Controls->Add(this->addTaskBtn);
 			this->Controls->Add(this->taskInp);
 			this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
 			this->Name = L"MyForm";
-			this->Text = L"MyForm";
+			this->Text = L"Taskify";
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
@@ -124,23 +149,25 @@ namespace toDoList {
 #pragma endregion
 	private: System::Void addTaskBtn_Click(System::Object^ sender, System::EventArgs^ e) {
 		String^ task = taskInp->Text->ToString();
-		std::string nativeTask = msclr::interop::marshal_as<std::string>(task);
-		std::unordered_set<std::string> set;
-		
-		for (int i = 0;i < taskList->Items->Count;i++) {
-			String^ t = taskList->Items[i]->ToString();
-			std::string nativeT = msclr::interop::marshal_as<std::string>(t);
-			set.insert(nativeT);
-		}
-		if (set.find(nativeTask)!=set.end()) {
-			this->Controls->Add(this->taskExistsLabel);
-			taskInp->Text = "";
-			wait(1000);
-			this->Controls->Remove(this->taskExistsLabel);
-		}
-		else {
-			taskList->Items->Add(task);
-			taskInp->Text = "";
+		if (!task->Equals("")) {
+			std::string nativeTask = msclr::interop::marshal_as<std::string>(task);
+			std::unordered_set<std::string> set;
+
+			for (int i = 0;i < taskList->Items->Count;i++) {
+				String^ t = taskList->Items[i]->ToString();
+				std::string nativeT = msclr::interop::marshal_as<std::string>(t);
+				set.insert(nativeT.substr(3));
+			}
+			if (set.find(nativeTask) != set.end()) {
+				this->Controls->Add(this->taskExistsLabel);
+				taskInp->Text = "";
+				wait(1000);
+				this->Controls->Remove(this->taskExistsLabel);
+			}
+			else {
+				taskList->Items->Add((taskList->Items->Count + 1) + ". " + task);
+				taskInp->Text = "";
+			}
 		}
 		
 	}
@@ -149,9 +176,14 @@ namespace toDoList {
 		int selectedItem = taskList->Items->IndexOf(task);
 		Debug::WriteLine(selectedItem);
 		taskList->Items->RemoveAt(selectedItem);
-		taskList->Items->Insert(selectedItem, task + L"\u2713");
+		taskList->Items->Insert(selectedItem,task + L"\u2713");
 		wait(2000);
 		taskList->Items->RemoveAt(selectedItem);
+		for (int i = selectedItem;i < taskList->Items->Count;i++) {
+			String^ t = taskList->Items[i]->ToString();
+			taskList->Items->RemoveAt(i);
+			taskList->Items->Insert(i, (i+1)+". "+t->Substring(3));
+		}
 	}
 
 		   void wait(int n) {
@@ -160,5 +192,20 @@ namespace toDoList {
 				   Application::DoEvents();
 			   }
 		   }
+
+		   private: System::Void deleteItem(System::Object^ sender, System::EventArgs^ e) {
+			   String^ task = taskList->SelectedItem->ToString();
+			   taskList->Items->Remove(task);
+		   }
+
+			private: System::Void updateItem(System::Object^ sender, System::EventArgs^ e) {
+				String^ task = taskList->SelectedItem->ToString();
+				String^ newTask = taskInp->Text->ToString();
+				int i = taskList->Items->IndexOf(task);
+				taskList->Items->RemoveAt(i);
+				taskList->Items->Insert(i, (i + 1) + ". "+ newTask);
+				taskInp->Text = "";
+			}
+
 	};
 }
