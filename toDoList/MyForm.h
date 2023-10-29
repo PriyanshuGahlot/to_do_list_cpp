@@ -195,16 +195,24 @@ namespace toDoList {
 
 		   private: System::Void deleteItem(System::Object^ sender, System::EventArgs^ e) {
 			   String^ task = taskList->SelectedItem->ToString();
+			   int selectedItem = taskList->Items->IndexOf(task);
 			   taskList->Items->Remove(task);
+			   for (int i = selectedItem;i < taskList->Items->Count;i++) {
+				   String^ t = taskList->Items[i]->ToString();
+				   taskList->Items->RemoveAt(i);
+				   taskList->Items->Insert(i, (i + 1) + ". " + t->Substring(3));
+			   }
 		   }
 
 			private: System::Void updateItem(System::Object^ sender, System::EventArgs^ e) {
 				String^ task = taskList->SelectedItem->ToString();
 				String^ newTask = taskInp->Text->ToString();
-				int i = taskList->Items->IndexOf(task);
-				taskList->Items->RemoveAt(i);
-				taskList->Items->Insert(i, (i + 1) + ". "+ newTask);
-				taskInp->Text = "";
+				if (!newTask->Equals("")) {
+					int i = taskList->Items->IndexOf(task);
+					taskList->Items->RemoveAt(i);
+					taskList->Items->Insert(i, (i + 1) + ". " + newTask);
+					taskInp->Text = "";
+				}
 			}
 
 	};
